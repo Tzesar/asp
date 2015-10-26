@@ -1,7 +1,7 @@
 package org.compiler;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
@@ -12,42 +12,46 @@ import static java.lang.Character.isUpperCase;
 public class Production {
 
     private Terminal head;
-    private List<BodyArtifact> body;
+    private Deque<Deque<BodyArtifact>> bodies;
 
     public Production(String inputLine) throws MalformedProductionException{
+        bodies = new ArrayDeque<>();
         inputLine = Production.cleanProduction(inputLine);
 
         if (checkLineComposition(inputLine)) {
             int arrowIndex = inputLine.indexOf("->");
             Character headString = inputLine.charAt(0);
-            String bodyString = inputLine.substring(arrowIndex + 1);
+            String bodyString = inputLine.substring(arrowIndex + 2);
 
             head = new Terminal(headString);
-            body = createBody(bodyString);
+            createBodies(bodyString);
         }
     }
 
-    private List<BodyArtifact> createBody(String bodyString) {
-        List<BodyArtifact> bodyArtifacts = new ArrayList<>();
+    private void createBodies(String bodyString) {
+        Deque<BodyArtifact> body = new ArrayDeque<>();
 
         for( int i = 0; i < bodyString.length(); i++ ){
-            Character bodyArtifactString = bodyString.charAt(i);
+            Character bodyArtifactChar = bodyString.charAt(i);
 
-            if ( isUpperCase(bodyArtifactString) ){
-                bodyArtifacts.add(new NonTerminal(bodyArtifactString));
-            } else if ( isLowerCase(bodyArtifactString) ){
-                bodyArtifacts.add(new Terminal(bodyArtifactString));
+            if ( isUpperCase(bodyArtifactChar) ){
+                body.add(new NonTerminal(bodyArtifactChar));
+            } else if ( isLowerCase(bodyArtifactChar) ){
+                body.add(new Terminal(bodyArtifactChar));
+            } else {
+                bodies.add(body);
+                body = new ArrayDeque<>();
             }
         }
 
-        return bodyArtifacts;
+        bodies.add(body);
     }
 
     private static boolean checkLineComposition(String inputLine) throws MalformedProductionException{
 
         if ( !inputLine.contains("->") ){
             throw new MalformedProductionException("The production must have a head and a body arranged like this 'A -> bCd'.");
-        } else if ( !inputLine.matches("[A-Za-z]->[A-Za-z]+?(\\|[A-Za-z]+?)*?") ){
+        } else if ( !inputLine.matches("[A-Za-z]->[A-Za-z]+?(\\|[A-Za-z]+?)*?(\\|@)??") ){
             throw new MalformedProductionException("The production must have a head and a body arranged like this 'A -> bCd'.");
         }
 
@@ -62,12 +66,12 @@ public class Production {
         this.head = head;
     }
 
-    public List<BodyArtifact> getBody() {
-        return body;
+    public Deque<Deque<BodyArtifact>> getBodies() {
+        return bodies;
     }
 
-    public void setBody(List<BodyArtifact> body) {
-        this.body = body;
+    public void setBodies(Deque<Deque<BodyArtifact>> bodies) {
+        this.bodies = bodies;
     }
 
     public static String cleanProduction(String inputLine){
@@ -79,7 +83,18 @@ public class Production {
 
     @Override
     public String toString(){
-        return head.toString() + " -> " + body.stream().map(BodyArtifact::toString).reduce("", (bodyString, artifactString) -> bodyString + artifactString);
+
+        return head.toString() + " -> " + bodies.stream().map(body -> body
+                    .stream()
+                    .map(BodyArtifact::toString)
+                    .reduce("", (bodyString, artifactString) -> bodyString + artifactString))
+                .reduce("", (bodiesString, bodyString) -> {
+                    if ( "".equals(bodyString) ){
+                        return bodiesString + " | @ ";
+                    } else {
+                        return bodiesString + bodyString + " | ";
+                    }
+                });
     }
 
     @Override
@@ -89,14 +104,14 @@ public class Production {
 
         Production that = (Production) o;
 
-        return head.equals(that.head) && body.equals(that.body);
+        return head.equals(that.head) && bodies.equals(that.bodies);
 
     }
 
     @Override
     public int hashCode() {
         int result = head.hashCode();
-        result = 31 * result + body.hashCode();
+        result = 31 * result + bodies.hashCode();
         return result;
     }
 }

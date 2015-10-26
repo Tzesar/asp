@@ -3,7 +3,7 @@ package org.compiler;
 public class Main {
 
     public static void main(String[] args) {
-        String testInputLine = "S -> ABc";
+        String testInputLine = "S ->ABc|cd";
 
         try {
             Production production = new Production(testInputLine);
