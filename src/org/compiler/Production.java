@@ -83,16 +83,19 @@ public class Production {
 
     @Override
     public String toString(){
-
         return head.toString() + " -> " + bodies.stream().map(body -> body
                     .stream()
                     .map(BodyArtifact::toString)
                     .reduce("", (bodyString, artifactString) -> bodyString + artifactString))
                 .reduce("", (bodiesString, bodyString) -> {
+                    String joinLexeme = "";
+                    if ( !"".equals(bodiesString) ){
+                        joinLexeme = " | ";
+                    }
                     if ( "".equals(bodyString) ){
-                        return bodiesString + " | @ ";
+                        return bodiesString + joinLexeme + " @ ";
                     } else {
-                        return bodiesString + bodyString + " | ";
+                        return bodiesString + joinLexeme + bodyString;
                     }
                 });
     }
