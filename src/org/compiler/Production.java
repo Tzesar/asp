@@ -6,9 +6,6 @@ import java.util.Deque;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 
-/**
- * Created by augusto on 10/23/15.
- */
 public class Production {
 
     private Terminal head;
@@ -50,9 +47,11 @@ public class Production {
     private static boolean checkLineComposition(String inputLine) throws MalformedProductionException{
 
         if ( !inputLine.contains("->") ){
-            throw new MalformedProductionException("The production must have a head and a body arranged like this 'A -> bCd'.");
+            throw new MalformedProductionException("The production must have a head and a body arranged like this" +
+                    " 'A -> bCd', found " + inputLine);
         } else if ( !inputLine.matches("[A-Za-z]->[A-Za-z]+?(\\|[A-Za-z]+?)*?(\\|@)??") ){
-            throw new MalformedProductionException("The production must have a head and a body arranged like this 'A -> bCd'.");
+            throw new MalformedProductionException("The production must have a head and a body arranged like this" +
+                    " 'A -> bCd', found " + inputLine);
         }
 
         return true;

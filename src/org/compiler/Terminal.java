@@ -1,8 +1,5 @@
 package org.compiler;
 
-/**
- * Created by augusto on 10/23/15.
- */
 public class Terminal implements BodyArtifact {
     private Character name;
 
