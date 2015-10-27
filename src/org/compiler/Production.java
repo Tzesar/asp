@@ -1,47 +1,36 @@
 package org.compiler;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-import static java.lang.Character.isLowerCase;
-import static java.lang.Character.isUpperCase;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Production {
 
-    private Terminal head;
-    private Deque<Deque<BodyArtifact>> bodies;
+    private NonTerminal head;
+    private List<Body> bodies;
+    private boolean derivesToEmpty;
 
     public Production(String inputLine) throws MalformedProductionException{
-        bodies = new ArrayDeque<>();
+        bodies = new ArrayList<>();
+        derivesToEmpty = false;
         inputLine = Production.cleanProduction(inputLine);
 
         if (checkLineComposition(inputLine)) {
             int arrowIndex = inputLine.indexOf("->");
             Character headString = inputLine.charAt(0);
-            String bodyString = inputLine.substring(arrowIndex + 2);
+            String bodiesString = inputLine.substring(arrowIndex + 2);
 
-            head = new Terminal(headString);
-            createBodies(bodyString);
-        }
-    }
+            head = new NonTerminal(headString);
+            Arrays.asList(bodiesString.split("\\|")).stream().forEach(bodyString -> {
+                Body body = new Body(bodyString);
+                if ( body.containsEmpty() ){
+                    derivesToEmpty = true;
+                }
 
-    private void createBodies(String bodyString) {
-        Deque<BodyArtifact> body = new ArrayDeque<>();
-
-        for( int i = 0; i < bodyString.length(); i++ ){
-            Character bodyArtifactChar = bodyString.charAt(i);
-
-            if ( isUpperCase(bodyArtifactChar) ){
-                body.add(new NonTerminal(bodyArtifactChar));
-            } else if ( isLowerCase(bodyArtifactChar) ){
-                body.add(new Terminal(bodyArtifactChar));
-            } else {
                 bodies.add(body);
-                body = new ArrayDeque<>();
-            }
+            });
         }
-
-        bodies.add(body);
     }
 
     private static boolean checkLineComposition(String inputLine) throws MalformedProductionException{
@@ -57,46 +46,41 @@ public class Production {
         return true;
     }
 
-    public Terminal getHead() {
+    public NonTerminal getHead() {
         return head;
     }
 
-    public void setHead(Terminal head) {
+    public void setHead(NonTerminal head) {
         this.head = head;
     }
 
-    public Deque<Deque<BodyArtifact>> getBodies() {
+    public List<Body> getBodies() {
         return bodies;
     }
 
-    public void setBodies(Deque<Deque<BodyArtifact>> bodies) {
+    public void setBodies(List<Body> bodies) {
         this.bodies = bodies;
+    }
+
+    public boolean derivesToEmpty() {
+        return derivesToEmpty;
+    }
+
+    public void setDerivesToEmpty(boolean derivesToEmpty) {
+        this.derivesToEmpty = derivesToEmpty;
     }
 
     public static String cleanProduction(String inputLine){
         inputLine = inputLine.trim();
         inputLine = inputLine.replace(" ", "");
+        inputLine = inputLine.replace("\t", "");
 
         return inputLine;
     }
 
     @Override
     public String toString(){
-        return head.toString() + " -> " + bodies.stream().map(body -> body
-                    .stream()
-                    .map(BodyArtifact::toString)
-                    .reduce("", (bodyString, artifactString) -> bodyString + artifactString))
-                .reduce("", (bodiesString, bodyString) -> {
-                    String joinLexeme = "";
-                    if ( !"".equals(bodiesString) ){
-                        joinLexeme = " | ";
-                    }
-                    if ( "".equals(bodyString) ){
-                        return bodiesString + joinLexeme + " @ ";
-                    } else {
-                        return bodiesString + joinLexeme + bodyString;
-                    }
-                });
+        return head.toString() + " -> " + String.join(" | ", bodies.stream().map(Body::toString).collect(Collectors.toList()));
     }
 
     @Override

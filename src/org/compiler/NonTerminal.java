@@ -1,18 +1,8 @@
 package org.compiler;
 
-public class NonTerminal implements BodyArtifact {
-    private Character name;
-
+public class NonTerminal extends BodyArtifact {
     public NonTerminal(Character bodyArtifactString) {
         name = bodyArtifactString;
-    }
-
-    public Character getName() {
-        return name;
-    }
-
-    public void setName(Character name) {
-        this.name = name;
     }
 
     @Override
@@ -29,16 +19,6 @@ public class NonTerminal implements BodyArtifact {
     @Override
     public int hashCode() {
         return name.hashCode();
-    }
-
-    @Override
-    public boolean isTerminal() {
-        return false;
-    }
-
-    @Override
-    public boolean isNonTerminal() {
-        return true;
     }
 
     @Override

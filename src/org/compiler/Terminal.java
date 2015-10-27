@@ -1,18 +1,19 @@
 package org.compiler;
 
-public class Terminal implements BodyArtifact {
-    private Character name;
+public class Terminal extends BodyArtifact {
+    private boolean emptyTerminal;
 
     public Terminal(Character bodyArtifactString) {
         name = bodyArtifactString;
+        emptyTerminal = false;
     }
 
-    public Character getName() {
-        return name;
+    public boolean isEmptyTerminal(){
+        return emptyTerminal;
     }
 
-    public void setName(Character name) {
-        this.name = name;
+    public void setAsEmptyTerminal() {
+        emptyTerminal = true;
     }
 
     @Override
@@ -29,16 +30,6 @@ public class Terminal implements BodyArtifact {
     @Override
     public int hashCode() {
         return name.hashCode();
-    }
-
-    @Override
-    public boolean isTerminal() {
-        return true;
-    }
-
-    @Override
-    public boolean isNonTerminal() {
-        return false;
     }
 
     @Override

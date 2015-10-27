@@ -7,9 +7,16 @@ import java.util.stream.Collectors;
 public class Main {
 
     public static void main(String[] args) {
-        String input = "S ->ABc|cd; P -> Ssa";
+        String input = "E\t-> T H\n;" +
+                "H\t-> a T H | @\n;" +
+                "T\t-> F G\n;" +
+                "G\t-> b F G | @\n;" +
+                "F\t-> d E d | i;";
 
         List<Production> productionList = createProductions(input);
+        productionList.forEach( production1 -> System.out.println(production1.toString()) );
+        SyntaxAnalyzer syntaxAnalyzer = new SyntaxAnalyzer(productionList);
+        productionList.forEach( production -> System.out.println(syntaxAnalyzer.printSetFirst(production.getHead())));
     }
 
     private static List<Production> createProductions(String input) {
@@ -17,11 +24,9 @@ public class Main {
             line = Production.cleanProduction(line);
 
             try {
-                Production production = new Production(line);
-                System.out.println(production.toString());
-                return production;
+                return new Production(line);
             } catch (MalformedProductionException malformedException){
-                System.out.println(malformedException.getMessage());
+                System.out.println("ERROR: " + malformedException.getMessage());
                 return null;
             }
         }).collect(Collectors.toList());
