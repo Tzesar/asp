@@ -53,4 +53,8 @@ public class Body {
     public String toString(){
         return String.join(" ", bodyArtifacts.stream().map(BodyArtifact::toString).collect(Collectors.toList()));
     }
+
+    public List<BodyArtifact> getArtifacts() {
+        return bodyArtifacts;
+    }
 }

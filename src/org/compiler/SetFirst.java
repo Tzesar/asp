@@ -38,6 +38,12 @@ public class SetFirst {
         containsEmpty = subSetFirst.containsEmpty();
     }
 
+    public void removeEmptyArtifact(){
+        if ( containsEmpty ) {
+            terminals.remove(new Terminal('@'));
+        }
+    }
+
     @Override
     public String toString(){
         return String.join(", ", terminals.stream().map(Terminal::toString).collect(Collectors.toList()));

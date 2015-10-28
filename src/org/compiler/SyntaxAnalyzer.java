@@ -29,16 +29,23 @@ public class SyntaxAnalyzer {
         SetFirst setFirst = new SetFirst();
 
         for ( Body body : production.getBodies() ) {
-            BodyArtifact artifact = body.getFirst();
-            if ( artifact instanceof Terminal ){
-                setFirst.add((Terminal) artifact);
-            } else {
-                Production prod = productions.get((NonTerminal) artifact);
-
-                SetFirst subSetFirst = getSetFirst(prod.getHead());
-                if ( !subSetFirst.containsEmpty() ){
-                    setFirst.addAll(subSetFirst);
+            for ( BodyArtifact artifact : body.getArtifacts() ) {
+                if (artifact instanceof Terminal) {
+                    Terminal terminal = (Terminal) artifact;
+                    if ( terminal.isEmptyTerminal() ){
+                        setFirst.setContainsEmpty(true);
+                    }
+                    setFirst.add(terminal);
                     break;
+                } else {
+                    Production prod = productions.get((NonTerminal) artifact);
+
+                    SetFirst subSetFirst = getSetFirst(prod.getHead());
+                    subSetFirst.removeEmptyArtifact();
+                    setFirst.addAll(subSetFirst);
+                    if (!subSetFirst.containsEmpty()) {
+                        break;
+                    }
                 }
             }
         }
