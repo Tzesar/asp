@@ -4,16 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 
 public class Body {
     public static final Character EMPTY_STRING = '@';
     private List<BodyArtifact> bodyArtifacts;
+    private SetFirst setFirst;
     private boolean containsEmpty;
 
     public Body(String bodyString){
         bodyArtifacts = new ArrayList<>();
+        setFirst = new SetFirst();
         containsEmpty = false;
 
         for( int i = 0; i < bodyString.length(); i++ ){
@@ -21,14 +22,14 @@ public class Body {
 
             if ( isUpperCase(bodyArtifactChar) ){
                 bodyArtifacts.add(new NonTerminal(bodyArtifactChar));
-            } else if ( isLowerCase(bodyArtifactChar) ){
-                bodyArtifacts.add(new Terminal(bodyArtifactChar));
             } else if ( EMPTY_STRING == bodyArtifactChar ){
                 containsEmpty = true;
 
                 Terminal emptyTerminal = new Terminal(bodyArtifactChar);
                 emptyTerminal.setAsEmptyTerminal();
                 bodyArtifacts.add(emptyTerminal);
+            } else {
+                bodyArtifacts.add(new Terminal(bodyArtifactChar));
             }
         }
     }
@@ -47,6 +48,14 @@ public class Body {
 
     public boolean isEmpty(){
         return ! ( size() > 0 );
+    }
+
+    public SetFirst getSetFirst() {
+        return setFirst;
+    }
+
+    public void setSetFirst(SetFirst setFirst) {
+        this.setFirst = setFirst;
     }
 
     @Override

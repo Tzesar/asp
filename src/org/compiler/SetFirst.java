@@ -34,8 +34,12 @@ public class SetFirst {
     }
 
     public void addAll(SetFirst subSetFirst) {
-        terminals.addAll(subSetFirst.getTerminals());
+        terminals.addAll(subSetFirst.getTerminals().stream().filter( terminal -> !terminals.contains(terminal) ).collect(Collectors.toList()));
         containsEmpty = subSetFirst.containsEmpty();
+    }
+
+    public void addAllWithoutEmptyTerminal(SetFirst subSetFirst) {
+        this.terminals.addAll(subSetFirst.terminals.stream().filter(terminal -> !terminal.isEmptyTerminal()).collect(Collectors.toList()));
     }
 
     public void removeEmptyArtifact(){

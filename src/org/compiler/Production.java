@@ -38,7 +38,7 @@ public class Production {
         if ( !inputLine.contains("->") ){
             throw new MalformedProductionException("The production must have a head and a body arranged like this" +
                     " 'A -> bCd', found " + inputLine);
-        } else if ( !inputLine.matches("[A-Za-z]->[A-Za-z]+?(\\|[A-Za-z]+?)*?(\\|@)??") ){
+        } else if ( !inputLine.matches("[A-Za-z]->[A-Za-z_\\+\\*\\-/\\(\\)]+?(\\|[A-Za-z_\\+\\*\\-/\\(\\)]+?)*?(\\|@)??") ){
             throw new MalformedProductionException("The production must have a head and a body arranged like this" +
                     " 'A -> bCd', found " + inputLine);
         }
@@ -91,7 +91,6 @@ public class Production {
         Production that = (Production) o;
 
         return head.equals(that.head) && bodies.equals(that.bodies);
-
     }
 
     @Override

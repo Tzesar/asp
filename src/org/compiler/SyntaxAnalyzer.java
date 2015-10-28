@@ -1,6 +1,10 @@
 package org.compiler;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class SyntaxAnalyzer {
     private Map<NonTerminal, Production> productions;
@@ -11,7 +15,10 @@ public class SyntaxAnalyzer {
         productionList.stream().forEach( production -> productions.put(production.getHead(), production));
 
         setsFirst = new HashMap<>();
-        productionList.stream().forEach( production -> setsFirst.put(production.getHead(), constructSetFirst(production.getHead())));
+        productionList.stream()
+                .collect(Collectors.toCollection(ArrayDeque::new))
+                .descendingIterator()
+                .forEachRemaining( production -> setsFirst.put(production.getHead(), constructSetFirst(production.getHead())) );
     }
 
     public SetFirst getSetFirst(NonTerminal nonTerminal){
@@ -29,25 +36,32 @@ public class SyntaxAnalyzer {
         SetFirst setFirst = new SetFirst();
 
         for ( Body body : production.getBodies() ) {
+            SetFirst bodySetFirst = new SetFirst();
             for ( BodyArtifact artifact : body.getArtifacts() ) {
                 if (artifact instanceof Terminal) {
                     Terminal terminal = (Terminal) artifact;
                     if ( terminal.isEmptyTerminal() ){
-                        setFirst.setContainsEmpty(true);
+                        bodySetFirst.setContainsEmpty(true);
                     }
-                    setFirst.add(terminal);
+                    bodySetFirst.add(terminal);
                     break;
                 } else {
                     Production prod = productions.get((NonTerminal) artifact);
 
                     SetFirst subSetFirst = getSetFirst(prod.getHead());
-                    subSetFirst.removeEmptyArtifact();
-                    setFirst.addAll(subSetFirst);
+                    if ( body.getArtifacts().indexOf(artifact) == (body.getArtifacts().size() - 1) ){
+                        bodySetFirst.addAll(subSetFirst);
+                    } else {
+                        bodySetFirst.addAllWithoutEmptyTerminal(subSetFirst);
+                    }
                     if (!subSetFirst.containsEmpty()) {
                         break;
                     }
                 }
             }
+
+            body.setSetFirst(bodySetFirst);
+            setFirst.addAll(bodySetFirst);
         }
 
         return setFirst;
