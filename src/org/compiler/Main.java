@@ -1,5 +1,8 @@
 package org.compiler;
 
+import org.compiler.Exceptions.MalformedProductionException;
+import org.compiler.Util.Constants;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,9 +31,12 @@ public class Main {
                 "F\t-> ( E ) | i;";
 
         List<Production> productionList = createProductions(input);
-        productionList.forEach( production1 -> System.out.println(production1.toString()) );
+        productionList.forEach( production -> System.out.println(production.toString()) );
+        System.out.println(Constants.DIVIDING_BAR);
         SyntaxAnalyzer syntaxAnalyzer = new SyntaxAnalyzer(productionList);
         productionList.forEach( production -> System.out.println(syntaxAnalyzer.printSetFirst(production.getHead())));
+        System.out.println(Constants.DIVIDING_BAR);
+        syntaxAnalyzer.getNonTerminals().forEach(nonTerminal -> System.out.println(syntaxAnalyzer.printSetFollow(nonTerminal)));
     }
 
     private static List<Production> createProductions(String input) {

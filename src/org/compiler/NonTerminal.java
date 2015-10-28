@@ -5,6 +5,14 @@ public class NonTerminal extends BodyArtifact {
         name = bodyArtifactString;
     }
 
+    public boolean isTerminal(){
+        return false;
+    }
+
+    public boolean isNonTerminal(){
+        return true;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

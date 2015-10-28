@@ -1,5 +1,7 @@
 package org.compiler;
 
+import org.compiler.Exceptions.MalformedProductionException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,7 +13,7 @@ public class Production {
     private List<Body> bodies;
     private boolean derivesToEmpty;
 
-    public Production(String inputLine) throws MalformedProductionException{
+    public Production(String inputLine) throws MalformedProductionException {
         bodies = new ArrayList<>();
         derivesToEmpty = false;
         inputLine = Production.cleanProduction(inputLine);

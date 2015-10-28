@@ -2,10 +2,12 @@ package org.compiler;
 
 public class Terminal extends BodyArtifact {
     private boolean emptyTerminal;
+    private boolean endMarker;
 
     public Terminal(Character bodyArtifactString) {
         name = bodyArtifactString;
         emptyTerminal = false;
+        endMarker = false;
     }
 
     public boolean isEmptyTerminal(){
@@ -14,6 +16,22 @@ public class Terminal extends BodyArtifact {
 
     public void setAsEmptyTerminal() {
         emptyTerminal = true;
+    }
+
+    public boolean isTerminal(){
+        return true;
+    }
+
+    public boolean isNonTerminal(){
+        return false;
+    }
+
+    public boolean isEndMarker() {
+        return endMarker;
+    }
+
+    public void setEndMarker(boolean endMarker) {
+        this.endMarker = endMarker;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.compiler;
+package org.compiler.Exceptions;
 
 /**
  * Created by augusto on 10/26/15.

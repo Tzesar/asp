@@ -1,5 +1,7 @@
 package org.compiler;
 
+import org.compiler.Util.Constants;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,7 +9,6 @@ import java.util.stream.Collectors;
 import static java.lang.Character.isUpperCase;
 
 public class Body {
-    public static final Character EMPTY_STRING = '@';
     private List<BodyArtifact> bodyArtifacts;
     private SetFirst setFirst;
     private boolean containsEmpty;
@@ -22,7 +23,7 @@ public class Body {
 
             if ( isUpperCase(bodyArtifactChar) ){
                 bodyArtifacts.add(new NonTerminal(bodyArtifactChar));
-            } else if ( EMPTY_STRING == bodyArtifactChar ){
+            } else if ( Constants.EMPTY_STRING == bodyArtifactChar ){
                 containsEmpty = true;
 
                 Terminal emptyTerminal = new Terminal(bodyArtifactChar);

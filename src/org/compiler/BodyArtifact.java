@@ -11,5 +11,9 @@ public abstract class BodyArtifact {
         this.name = name;
     }
 
+    public abstract boolean isNonTerminal();
+
+    public abstract boolean isTerminal();
+
     public abstract String toString();
 }
