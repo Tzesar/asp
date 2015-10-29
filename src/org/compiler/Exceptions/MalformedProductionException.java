@@ -1,9 +1,6 @@
 package org.compiler.Exceptions;
 
-/**
- * Created by augusto on 10/26/15.
- */
-public class MalformedProductionException extends Exception {
+public class MalformedProductionException extends SyntaxAnalyzerException{
     public MalformedProductionException(String message) {
         super(message);
     }

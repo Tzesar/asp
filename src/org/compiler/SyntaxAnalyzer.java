@@ -1,5 +1,7 @@
 package org.compiler;
 
+import org.compiler.Exceptions.LeftRecursionException;
+import org.compiler.Exceptions.SyntaxAnalyzerException;
 import org.compiler.Util.Constants;
 
 import java.util.*;
@@ -14,7 +16,7 @@ public class SyntaxAnalyzer {
     private List<Terminal> terminals;
     private ParsingTable parsingTable;
 
-    public SyntaxAnalyzer(List<Production> productionList) {
+    public SyntaxAnalyzer(List<Production> productionList) throws SyntaxAnalyzerException{
         productions = new HashMap<>();
         nonTerminals = new ArrayListUnique<>();
         terminals = new ArrayListUnique<>();
@@ -27,8 +29,18 @@ public class SyntaxAnalyzer {
         nonTerminals.addAll(retrieveAllNonTerminals(productionList));
         terminals.addAll(retrieveAllTerminals(productionList));
 
-        constructSetFirst();
-        constructSetFollow();
+
+        try {
+            constructSetFirst();
+        } catch (StackOverflowError e){
+            throw new LeftRecursionException("A direct Left Recursion is present in the grammar provided.");
+        }
+
+        try {
+            constructSetFollow();
+        } catch (StackOverflowError e){
+            throw new LeftRecursionException("An indirect Left Recursion is present in the grammar provided.");
+        }
 
         parsingTable = new ParsingTable(nonTerminals, terminals);
         constructParsingTable();
@@ -172,7 +184,7 @@ public class SyntaxAnalyzer {
                                                 .filter(terminal -> !terminal.isEmptyTerminal())
                                                 .collect(Collectors.toList())
                                 );
-                                if (setFirstNextArtifact.containsEmpty() && !production.getHead().equals(nextArtifact)) {
+                                if (setFirstNextArtifact.containsEmpty() && !production.getHead().equals(nonTerminal)) {
                                     setFollow.addAll(getSetFollow(production.getHead()));
                                 }
                             }
