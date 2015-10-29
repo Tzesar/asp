@@ -12,6 +12,14 @@ public class Body {
     private List<BodyArtifact> bodyArtifacts;
     private SetFirst setFirst;
     private boolean containsEmpty;
+    private boolean synchronizationBody;
+
+    public Body(){
+        bodyArtifacts = new ArrayList<>();
+        setFirst = null;
+        containsEmpty = false;
+        synchronizationBody = false;
+    }
 
     public Body(String bodyString){
         bodyArtifacts = new ArrayList<>();
@@ -59,9 +67,21 @@ public class Body {
         this.setFirst = setFirst;
     }
 
+    public boolean isSynchronizationBody() {
+        return synchronizationBody;
+    }
+
+    public void setSynchronizationBody(boolean synchronizationBody) {
+        this.synchronizationBody = synchronizationBody;
+    }
+
     @Override
     public String toString(){
-        return String.join(" ", bodyArtifacts.stream().map(BodyArtifact::toString).collect(Collectors.toList()));
+        if ( synchronizationBody ){
+            return "sync";
+        } else {
+            return String.join(" ", bodyArtifacts.stream().map(BodyArtifact::toString).collect(Collectors.toList()));
+        }
     }
 
     public List<BodyArtifact> getArtifacts() {

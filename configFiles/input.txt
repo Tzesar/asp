@@ -1,1 +1,5 @@
-i+i
+//Sin errores
+i+(i*i)
+
+// Contiene errores
+//)i*+i

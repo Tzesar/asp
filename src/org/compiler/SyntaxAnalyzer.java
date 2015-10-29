@@ -47,7 +47,7 @@ public class SyntaxAnalyzer {
         }
 
         try {
-            constructParsingTable(false);
+            constructParsingTable(true);
         } catch (RuntimeException e){
             throw new GrammarAmbiguityException(e.getMessage());
         }
@@ -56,28 +56,43 @@ public class SyntaxAnalyzer {
     private void constructParsingTable(boolean panicMode) throws GrammarAmbiguityException{
         productionList.stream().forEachOrdered(production -> production.getBodies().stream().forEachOrdered(body -> {
             SetFirst setFirst = body.getSetFirst();
-                setFirst.getTerminals().stream()
-                        .forEachOrdered(terminal -> {
-                            if ( !terminal.isEmptyTerminal() ) {
-                                parsingTable.putBodyProduction(production.getHead(), terminal, body);
-                            }
-                            if (setFirst.containsEmpty()) {
-                                List<Terminal> setFollow = setsFollow.get(production.getHead());
-                                setFollow.stream().forEachOrdered(rethrow(terminal1 -> {
-                                            boolean duplicatedEntry = parsingTable.putBodyProduction(production.getHead(), terminal1, body);
+            setFirst.getTerminals().stream()
+                    .forEachOrdered(terminal -> {
+                        if ( !terminal.isEmptyTerminal() ) {
+                            parsingTable.putBodyProduction(production.getHead(), terminal, body);
+                        }
+                        if (setFirst.containsEmpty()) {
+                            List<Terminal> setFollow = setsFollow.get(production.getHead());
+                            setFollow.stream().forEachOrdered(rethrow(terminal1 -> {
+                                        boolean duplicatedEntry = parsingTable.putBodyProduction(production.getHead(), terminal1, body);
 
-                                            if (!duplicatedEntry) {
-                                                Body firstBody = parsingTable.getBodyProduction(production.getHead(), terminal1);
-                                                throw new GrammarAmbiguityException("The Non-Terminal " + production.getHead().toString()
-                                                        + " has more than one productions for the Terminal " + terminal.toString()
-                                                        + ". Productions { [" + firstBody.toString() + "], [" + body.toString() + "] }."
-                                                );
-                                            }
-                                        })
-                                );
+                                        if (!duplicatedEntry) {
+                                            Body firstBody = parsingTable.getBodyProduction(production.getHead(), terminal1);
+                                            throw new GrammarAmbiguityException("The Non-Terminal " + production.getHead().toString()
+                                                    + " has more than one productions for the Terminal " + terminal.toString()
+                                                    + ". Productions { [" + firstBody.toString() + "], [" + body.toString() + "] }."
+                                            );
+                                        }
+                                    })
+                            );
+                        }
+                    });
+        }));
+
+        if ( panicMode ){
+            productionList.stream().forEachOrdered(production -> production.getBodies().stream().forEachOrdered(body -> {
+                Body syncBody = new Body();
+                syncBody.setSynchronizationBody(true);
+
+                setsFollow.get(production.getHead())
+                        .forEach(terminal -> {
+                            if (parsingTable.getBodyProduction(production.getHead(), terminal) == null) {
+                                parsingTable.putBodyProduction(production.getHead(), terminal, syncBody);
                             }
                         });
-        }));
+            }));
+
+        }
     }
 
     private List<NonTerminal> retrieveAllNonTerminals(List<Production> productionList) {
@@ -253,10 +268,11 @@ public class SyntaxAnalyzer {
         Deque<BodyArtifact> stack = new ArrayDeque<>();
         Deque<String> derivationStack = new ArrayDeque<>();
         Terminal endMarker = new Terminal(Constants.END_MARK_STRING);
-        endMarker.setEndMarker(true);
         symbolsInput = symbolsInput.concat(Constants.END_MARK_STRING.toString());
+        String matchedString = "";
         int inputIndex = 0;
 
+        endMarker.setEndMarker(true);
         stack.push(endMarker);
         stack.push(productionList.get(0).getHead());
         BodyArtifact topStack = stack.peekFirst();
@@ -265,6 +281,7 @@ public class SyntaxAnalyzer {
         while ( !topStack.equals(endMarker) ) {
             if (topStack.getName().equals(inputPointer)) {
                 derivationStack.push("matched ["+ topStack.getName() +"]");
+                matchedString += topStack.getName();
 
                 inputIndex++;
                 if ( inputIndex < symbolsInput.length() ) {
@@ -278,20 +295,31 @@ public class SyntaxAnalyzer {
             } else if (parsingTable.getBodyProduction((NonTerminal) topStack, inputPointer) == null) {
                 throw new DerivationException("[Syntax] Error at character " + inputPointer + " at "+ inputIndex +".");
             } else {
-                Body body = parsingTable.getBodyProduction((NonTerminal) topStack, inputPointer);
+                if ( parsingTable.getBodyProduction((NonTerminal) topStack, inputPointer).isSynchronizationBody() ) {
+                    derivationStack.push("error, skip '"+ inputPointer +"'");
 
-                derivationStack.push(topStack.getName() + " -> " + body.toString());
-                stack.pop();
-                if ( !body.containsEmpty() ) {
-                    body.getArtifacts().stream()
-                            .collect(Collectors.toCollection(ArrayDeque::new))
-                            .descendingIterator()
-                            .forEachRemaining(stack::push);
+                    inputIndex++;
+                    if ( inputIndex < symbolsInput.length() ) {
+                        inputPointer = symbolsInput.charAt(inputIndex);
+                    }
+                } else {
+                    Body body = parsingTable.getBodyProduction((NonTerminal) topStack, inputPointer);
+
+                    derivationStack.push(topStack.getName() + " -> " + body.toString());
+                    stack.pop();
+                    if ( !body.containsEmpty() ) {
+                        body.getArtifacts().stream()
+                                .collect(Collectors.toCollection(ArrayDeque::new))
+                                .descendingIterator()
+                                .forEachRemaining(stack::push);
+                    }
                 }
             }
 
             topStack = stack.peekFirst();
         }
+
+//        System.out.println("MATCHED STRING: "+ matchedString);
 
         return derivationStack;
     }
