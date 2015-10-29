@@ -1,11 +1,14 @@
 package org.compiler;
 
+import org.compiler.Exceptions.GrammarAmbiguityException;
 import org.compiler.Exceptions.LeftRecursionException;
 import org.compiler.Exceptions.SyntaxAnalyzerException;
 import org.compiler.Util.Constants;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.compiler.Util.Wrappers.rethrow;
 
 public class SyntaxAnalyzer {
     private Map<NonTerminal, Production> productions;
@@ -28,7 +31,7 @@ public class SyntaxAnalyzer {
 
         nonTerminals.addAll(retrieveAllNonTerminals(productionList));
         terminals.addAll(retrieveAllTerminals(productionList));
-
+        parsingTable = new ParsingTable(nonTerminals, terminals);
 
         try {
             constructSetFirst();
@@ -42,25 +45,38 @@ public class SyntaxAnalyzer {
             throw new LeftRecursionException("An indirect Left Recursion is present in the grammar provided.");
         }
 
-        parsingTable = new ParsingTable(nonTerminals, terminals);
-        constructParsingTable();
+        try {
+            constructParsingTable();
+        } catch (RuntimeException e){
+            throw new GrammarAmbiguityException(e.getMessage());
+        }
     }
 
-    private void constructParsingTable() {
-        productionList.stream().forEachOrdered( production -> {
-            production.getBodies().stream().forEachOrdered( body -> {
-                SetFirst setFirst = body.getSetFirst();
+    private void constructParsingTable() throws GrammarAmbiguityException{
+        productionList.stream().forEachOrdered(production -> production.getBodies().stream().forEachOrdered(body -> {
+            SetFirst setFirst = body.getSetFirst();
                 setFirst.getTerminals().stream()
-                        .forEachOrdered( terminal -> {
-                            parsingTable.setBodyProduction(production.getHead(), terminal, body);
-                            if ( setFirst.containsEmpty() ){
-                                List<Terminal> setFollow = setsFollow.get(production.getHead());
-                                setFollow.stream().forEachOrdered( terminal1 -> parsingTable.setBodyProduction(production.getHead(), terminal1, body) );
+                        .forEachOrdered(terminal -> {
+                            if ( !terminal.isEmptyTerminal() ) {
+                                parsingTable.putBodyProduction(production.getHead(), terminal, body);
                             }
-                        } );
-            });
+                            if (setFirst.containsEmpty()) {
+                                List<Terminal> setFollow = setsFollow.get(production.getHead());
+                                setFollow.stream().forEachOrdered(rethrow(terminal1 -> {
+                                            boolean duplicatedEntry = parsingTable.putBodyProduction(production.getHead(), terminal1, body);
 
-        });
+                                            if (!duplicatedEntry) {
+                                                Body firstBody = parsingTable.getBodyProduction(production.getHead(), terminal1);
+                                                throw new GrammarAmbiguityException("The Non-Terminal " + production.getHead().toString()
+                                                        + " has more than one productions for the Terminal " + terminal.toString()
+                                                        + ". Productions { [" + firstBody.toString() + "], [" + body.toString() + "] }."
+                                                );
+                                            }
+                                        })
+                                );
+                            }
+                        });
+        }));
     }
 
     private List<NonTerminal> retrieveAllNonTerminals(List<Production> productionList) {

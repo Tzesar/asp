@@ -1,5 +1,7 @@
 package org.compiler;
 
+import org.compiler.Util.Constants;
+
 import javax.sound.midi.Track;
 import java.util.HashMap;
 import java.util.List;
@@ -13,17 +15,21 @@ public class ParsingTable {
 
     public ParsingTable(List<NonTerminal> nonTerminalList, List<Terminal> terminalList){
         table = new HashMap<>();
+        Terminal endMarker = new Terminal(Constants.END_MARK_STRING);
 
         nonTerminalList.forEach( nonTerminal -> {
             Map<Terminal, Body> tableRow = new HashMap<>();
 
             terminalList.forEach( terminal -> tableRow.put(terminal, null));
+            if ( !terminalList.contains(endMarker) ){
+                tableRow.put(endMarker, null);
+            }
 
             table.put(nonTerminal, tableRow);
         });
     }
 
-    public boolean setBodyProduction(NonTerminal nonTerminal, Terminal terminal, Body body){
+    public boolean putBodyProduction(NonTerminal nonTerminal, Terminal terminal, Body body){
         Map<Terminal, Body> tableRow = table.get(nonTerminal);
 
         if ( tableRow.get(terminal) == null ){
