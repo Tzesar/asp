@@ -4,30 +4,34 @@ import org.compiler.Exceptions.MalformedProductionException;
 import org.compiler.Exceptions.SyntaxAnalyzerException;
 import org.compiler.Util.Constants;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Main {
 
     public static void main(String[] args) {
-        String input = "E\t-> T H\n;" +
-                "H\t-> a T H | @\n;" +
-                "T\t-> F G\n;" +
-                "G\t-> b F G | @\n;" +
-                "F\t-> d E d | i;";
+//        String input = "E\t-> T H\n;" +
+//                "H\t-> a T H | @\n;" +
+//                "T\t-> F G\n;" +
+//                "G\t-> b F G | @\n;" +
+//                "F\t-> d E d | i;";
 
-//        String input = "T->a|@;E->Tc|b;";sincronización de A.
+//        String input = "T->a|@;E->Tc|b;";
 
 //        String input = "S->iEtSK | a; K -> eS | @; E ->b;";
 
 //        String input = "S->Sa;R->d | e;";
 
-//        String input = "E\t-> T K;\n" +
-//                "K\t-> + T K | @;\n" +
-//                "T\t-> F J;\n" +
-//                "J\t-> * F J | @;\n" +
-//                "F\t-> ( E ) | i;";
+        String input = "E\t-> T K;\n" +
+                "K\t-> + T K | @;\n" +
+                "T\t-> F J;\n" +
+                "J\t-> * F J | @;\n" +
+                "F\t-> ( E ) | i;";
+
+        String symbolsInput = "i+i";
 
         try {
             List<Production> productionList = createProductions(input);
@@ -37,6 +41,12 @@ public class Main {
             productionList.forEach(production -> System.out.println(syntaxAnalyzer.printSetFirst(production.getHead())));
             System.out.println(Constants.DIVIDING_BAR);
             syntaxAnalyzer.getNonTerminals().forEach(nonTerminal -> System.out.println(syntaxAnalyzer.printSetFollow(nonTerminal)));
+            System.out.println(Constants.DIVIDING_BAR);
+            Deque<String> derivationStack = syntaxAnalyzer.deriveInput(symbolsInput);
+            derivationStack.stream()
+                    .collect(Collectors.toCollection(ArrayDeque::new))
+                    .descendingIterator()
+                    .forEachRemaining(System.out::println);
         } catch (SyntaxAnalyzerException saEx){
             System.out.println(saEx.getMessage());
         }

@@ -50,4 +50,8 @@ public class ParsingTable {
 
         return null;
     }
+
+    public Body getBodyProduction(NonTerminal nonTerminal, Character terminalCharacter){
+        return getBodyProduction(nonTerminal, new Terminal(terminalCharacter));
+    }
 }

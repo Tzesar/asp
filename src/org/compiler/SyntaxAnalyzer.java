@@ -1,5 +1,6 @@
 package org.compiler;
 
+import org.compiler.Exceptions.DerivationException;
 import org.compiler.Exceptions.GrammarAmbiguityException;
 import org.compiler.Exceptions.LeftRecursionException;
 import org.compiler.Exceptions.SyntaxAnalyzerException;
@@ -246,5 +247,52 @@ public class SyntaxAnalyzer {
         } else {
             return "This is not a processed Non-Terminal.";
         }
+    }
+
+    public Deque<String> deriveInput(String symbolsInput) throws DerivationException{
+        Deque<BodyArtifact> stack = new ArrayDeque<>();
+        Deque<String> derivationStack = new ArrayDeque<>();
+        Terminal endMarker = new Terminal(Constants.END_MARK_STRING);
+        endMarker.setEndMarker(true);
+        symbolsInput = symbolsInput.concat(Constants.END_MARK_STRING.toString());
+        int inputIndex = 0;
+
+        stack.push(endMarker);
+        stack.push(productionList.get(0).getHead());
+        BodyArtifact topStack = stack.peekFirst();
+
+        Character inputPointer = symbolsInput.charAt(inputIndex);
+        while ( !topStack.equals(endMarker) ) {
+            if (topStack.getName().equals(inputPointer)) {
+                derivationStack.push("matched ["+ topStack.getName() +"]");
+
+                inputIndex++;
+                if ( inputIndex < symbolsInput.length() ) {
+                    inputPointer = symbolsInput.charAt(inputIndex);
+                }
+
+                stack.pop();
+            } else if (topStack instanceof Terminal) {
+                throw new DerivationException("[Syntax] Error at character " + inputIndex + ", expected " + topStack.getName()
+                        + ".");
+            } else if (parsingTable.getBodyProduction((NonTerminal) topStack, inputPointer) == null) {
+                throw new DerivationException("[Syntax] Error at character " + inputPointer + " at "+ inputIndex +".");
+            } else {
+                Body body = parsingTable.getBodyProduction((NonTerminal) topStack, inputPointer);
+
+                derivationStack.push(topStack.getName() + " -> " + body.toString());
+                stack.pop();
+                if ( !body.containsEmpty() ) {
+                    body.getArtifacts().stream()
+                            .collect(Collectors.toCollection(ArrayDeque::new))
+                            .descendingIterator()
+                            .forEachRemaining(stack::push);
+                }
+            }
+
+            topStack = stack.peekFirst();
+        }
+
+        return derivationStack;
     }
 }
