@@ -3,3 +3,22 @@ K   -> + T K | @;
 T   -> F J;
 J   -> * F J | @;
 F   -> ( E ) | i;
+
+//E-> T H; +
+//H-> a T H | @;
+//T-> F G;
+//G-> b F G | @;
+//F-> d E d | i;
+
+//T->a|@;
+//E->Tc|b;
+
+//S->iEtSK | a; K -> eS | @; E ->b;
+
+//S->Sa;R->d | e;
+
+//E-> T K;
+//K-> + T K | @;
+//T-> F J;
+//J-> * F J | @;
+//F-> ( E ) | i;
