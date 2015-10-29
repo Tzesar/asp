@@ -23,16 +23,31 @@ public class Main {
             List<Production> productionList = createProductions(grammar);
             productionList.forEach(production -> System.out.println(production.toString()));
             System.out.println(Constants.DIVIDING_BAR);
+
             SyntaxAnalyzer syntaxAnalyzer = new SyntaxAnalyzer(productionList);
             productionList.forEach(production -> System.out.println(syntaxAnalyzer.printSetFirst(production.getHead())));
             System.out.println(Constants.DIVIDING_BAR);
+
             syntaxAnalyzer.getNonTerminals().forEach(nonTerminal -> System.out.println(syntaxAnalyzer.printSetFollow(nonTerminal)));
             System.out.println(Constants.DIVIDING_BAR);
-            Deque<String> derivationStack = syntaxAnalyzer.deriveInput(input);
-            derivationStack.stream()
+
+            System.out.println("Matched String\t\tAction Taken");
+            Map<String, Deque<String>> derivationTable = syntaxAnalyzer.deriveInput(input);
+
+            Deque<String> matchedStack = derivationTable.get(Constants.MATCHED_STACK);
+            Deque<String> actionStack = derivationTable.get(Constants.ACTION_STACK);
+
+            matchedStack.stream()
                     .collect(Collectors.toCollection(ArrayDeque::new))
                     .descendingIterator()
-                    .forEachRemaining(System.out::println);
+                    .forEachRemaining( match -> {
+                        if ( match.length() >= Constants.DERIVED_TABLE_PRINT_PADDING ){
+                            System.out.println(match+"\t\t\t\t"+actionStack.removeLast());
+                        } else {
+                            System.out.println(match+"\t\t\t\t\t"+actionStack.removeLast());
+                        }
+                    });
+
         } catch (SyntaxAnalyzerException saEx){
             System.out.println(saEx.getMessage());
         }

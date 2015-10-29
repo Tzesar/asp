@@ -264,9 +264,11 @@ public class SyntaxAnalyzer {
         }
     }
 
-    public Deque<String> deriveInput(String symbolsInput) throws DerivationException{
+    public Map<String, Deque<String>> deriveInput(String symbolsInput) throws DerivationException{
         Deque<BodyArtifact> stack = new ArrayDeque<>();
-        Deque<String> derivationStack = new ArrayDeque<>();
+        Deque<String> actionStack = new ArrayDeque<>();
+        Deque<String> matchedStack = new ArrayDeque<>();
+        Map<String, Deque<String>> derivationTable = new HashMap<>();
         Terminal endMarker = new Terminal(Constants.END_MARK_STRING);
         symbolsInput = symbolsInput.concat(Constants.END_MARK_STRING.toString());
         String matchedString = "";
@@ -276,12 +278,15 @@ public class SyntaxAnalyzer {
         stack.push(endMarker);
         stack.push(productionList.get(0).getHead());
         BodyArtifact topStack = stack.peekFirst();
+        actionStack.push(topStack.toString());
+        matchedStack.push(""+matchedString);
 
         Character inputPointer = symbolsInput.charAt(inputIndex);
         while ( !topStack.equals(endMarker) ) {
             if (topStack.getName().equals(inputPointer)) {
-                derivationStack.push("matched ["+ topStack.getName() +"]");
+                actionStack.push("matched [" + topStack.getName() + "]");
                 matchedString += topStack.getName();
+                matchedStack.push(""+matchedString);
 
                 inputIndex++;
                 if ( inputIndex < symbolsInput.length() ) {
@@ -296,7 +301,8 @@ public class SyntaxAnalyzer {
                 throw new DerivationException("[Syntax] Error at character " + inputPointer + " at "+ inputIndex +".");
             } else {
                 if ( parsingTable.getBodyProduction((NonTerminal) topStack, inputPointer).isSynchronizationBody() ) {
-                    derivationStack.push("error, skip '"+ inputPointer +"'");
+                    actionStack.push("error, skip '" + inputPointer + "'");
+                    matchedStack.push(""+matchedString);
 
                     inputIndex++;
                     if ( inputIndex < symbolsInput.length() ) {
@@ -305,7 +311,9 @@ public class SyntaxAnalyzer {
                 } else {
                     Body body = parsingTable.getBodyProduction((NonTerminal) topStack, inputPointer);
 
-                    derivationStack.push(topStack.getName() + " -> " + body.toString());
+                    actionStack.push(topStack.getName() + " -> " + body.toString());
+                    matchedStack.push(""+matchedString);
+
                     stack.pop();
                     if ( !body.containsEmpty() ) {
                         body.getArtifacts().stream()
@@ -321,6 +329,8 @@ public class SyntaxAnalyzer {
 
 //        System.out.println("MATCHED STRING: "+ matchedString);
 
-        return derivationStack;
+        derivationTable.put(Constants.MATCHED_STACK, matchedStack);
+        derivationTable.put(Constants.ACTION_STACK, actionStack);
+        return derivationTable;
     }
 }
