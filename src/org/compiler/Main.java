@@ -17,7 +17,7 @@ public class Main {
                 "G\t-> b F G | @\n;" +
                 "F\t-> d E d | i;";
 
-//        String input = "T->a|@;E->Tc|b;";
+//        String input = "T->a|@;E->Tc|b;";sincronización de A.
 
 //        String input = "S->iEtSK | a; K -> eS | @; E ->b;";
 
