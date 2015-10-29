@@ -12,6 +12,7 @@ public class SyntaxAnalyzer {
     private Map<BodyArtifact, List<Terminal>> setsFollow;
     private List<NonTerminal> nonTerminals;
     private List<Terminal> terminals;
+    private ParsingTable parsingTable;
 
     public SyntaxAnalyzer(List<Production> productionList) {
         productions = new HashMap<>();
@@ -28,6 +29,26 @@ public class SyntaxAnalyzer {
 
         constructSetFirst();
         constructSetFollow();
+
+        parsingTable = new ParsingTable(nonTerminals, terminals);
+        constructParsingTable();
+    }
+
+    private void constructParsingTable() {
+        productionList.stream().forEachOrdered( production -> {
+            production.getBodies().stream().forEachOrdered( body -> {
+                SetFirst setFirst = body.getSetFirst();
+                setFirst.getTerminals().stream()
+                        .forEachOrdered( terminal -> {
+                            parsingTable.setBodyProduction(production.getHead(), terminal, body);
+                            if ( setFirst.containsEmpty() ){
+                                List<Terminal> setFollow = setsFollow.get(production.getHead());
+                                setFollow.stream().forEachOrdered( terminal1 -> parsingTable.setBodyProduction(production.getHead(), terminal1, body) );
+                            }
+                        } );
+            });
+
+        });
     }
 
     private List<NonTerminal> retrieveAllNonTerminals(List<Production> productionList) {

@@ -18,11 +18,7 @@ public class Main {
 
 //        String input = "T->a|@;E->Tc|b;";
 
-//        String input = "E\t-> J K;\n" +
-//                "K\t-> a T K | @;\n" +
-//                "T\t-> F J;\n" +
-//                "J\t-> b F J | @;\n" +
-//                "F\t-> m E n | i;";
+//        String input = "S->iEtSK | a; K -> eS | @; E ->b;";
 
         String input = "E\t-> T K;\n" +
                 "K\t-> + T K | @;\n" +
