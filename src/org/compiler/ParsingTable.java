@@ -7,9 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by augusto on 10/28/15.
- */
 public class ParsingTable {
     private Map<NonTerminal, Map<Terminal, Body>> table;
 

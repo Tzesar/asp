@@ -47,13 +47,13 @@ public class SyntaxAnalyzer {
         }
 
         try {
-            constructParsingTable();
+            constructParsingTable(false);
         } catch (RuntimeException e){
             throw new GrammarAmbiguityException(e.getMessage());
         }
     }
 
-    private void constructParsingTable() throws GrammarAmbiguityException{
+    private void constructParsingTable(boolean panicMode) throws GrammarAmbiguityException{
         productionList.stream().forEachOrdered(production -> production.getBodies().stream().forEachOrdered(body -> {
             SetFirst setFirst = body.getSetFirst();
                 setFirst.getTerminals().stream()
