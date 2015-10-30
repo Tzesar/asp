@@ -1,5 +1,5 @@
-//Sin errores
+// No Errors
 i+(i*i)
 
-// Contiene errores
+// Has Errors
 //)i*+i
