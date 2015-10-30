@@ -1,5 +1,5 @@
 // No Errors
-i+(i*i)
+//i+(i*i)
 
 // Has Errors
-//)i*+i
+)i*+i

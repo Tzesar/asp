@@ -14,10 +14,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Main {
-
     public static void main(String[] args) {
         String grammar = getFileContent(Configurations.grammarPath);
         String input = getFileContent(Configurations.inputPath);
+
+        Configurations configurations = getConfigurationsFileContent(Configurations.configPath);
 
         try {
             List<Production> productionList = createProductions(grammar);
@@ -41,10 +42,18 @@ public class Main {
                     .collect(Collectors.toCollection(ArrayDeque::new))
                     .descendingIterator()
                     .forEachRemaining( match -> {
-                        if ( match.length() >= Constants.DERIVED_TABLE_PRINT_PADDING ){
-                            System.out.println(match+"\t\t\t\t"+actionStack.removeLast());
+                        if ( !configurations.printOutputFlag ){
+                            if (match.length() >= Constants.DERIVED_TABLE_PRINT_PADDING) {
+                                System.out.println(match + "\t\t\t\t" + actionStack.removeLast());
+                            } else {
+                                System.out.println(match + "\t\t\t\t\t" + actionStack.removeLast());
+                            }
                         } else {
-                            System.out.println(match+"\t\t\t\t\t"+actionStack.removeLast());
+                            if (match.length() >= Constants.DERIVED_TABLE_PRINT_PADDING) {
+                                System.out.println(match + "\t\t\t\t" + actionStack.removeLast());
+                            } else {
+                                System.out.println(match + "\t\t\t\t\t" + actionStack.removeLast());
+                            }
                         }
                     });
 
@@ -68,6 +77,38 @@ public class Main {
         }
 
         return String.join("", content);
+    }
+
+    private static Configurations getConfigurationsFileContent(String path) {
+        Configurations configurations = new Configurations();
+
+        Path filePath = Paths.get(path);
+        try {
+            Files.lines(filePath, Charset.defaultCharset()).forEach( line -> {
+                if (!line.startsWith("//")) {
+                    StringTokenizer tokenizer = new StringTokenizer(line);
+                    String flag = tokenizer.nextToken();
+                    switch (flag) {
+                        case Constants.SYNC_ERRORS_FLAG:
+                            if ( tokenizer.hasMoreTokens() && "1".equals(tokenizer.nextToken()) ) {
+                                configurations.setSyncErrorsFlag(true);
+                            }
+                            break;
+                        case Constants.PRINT_OUTPUT_FLAG:
+                            if ( tokenizer.hasMoreTokens() && "1".equals(tokenizer.nextToken()) ) {
+                                configurations.setPrintOutputFlag(true);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+        } catch (IOException e){
+            System.out.println("Working directory: "+ System.getProperty("user.dir") );
+        }
+
+        return configurations;
     }
 
     private static List<Production> createProductions(String input) {
